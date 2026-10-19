@@ -1,0 +1,7 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { name = 'Forge'; url = 'https://maven.minecraftforge.net' }
+    }
+}
+rootProject.name = 'kyoka_addon'
