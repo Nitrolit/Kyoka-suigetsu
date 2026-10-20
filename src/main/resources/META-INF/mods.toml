@@ -1,1 +1,30 @@
+modLoader = "javafml"
+loaderVersion = "[36,)"
+license = "Personal use"
 
+[[mods]]
+modId = "kyoka"
+version = "1.0.0"
+displayName = "Kyoka Suigetsu Addon"
+description = "Adds the Kyoka Suigetsu zanpakuto to Bleach Awaken."
+
+[[dependencies.kyoka]]
+modId = "forge"
+mandatory = true
+versionRange = "[36,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.kyoka]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.16.5]"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.kyoka]]
+modId = "bleachawaken"
+mandatory = true
+versionRange = "[0,)"
+ordering = "AFTER"
+side = "BOTH"
