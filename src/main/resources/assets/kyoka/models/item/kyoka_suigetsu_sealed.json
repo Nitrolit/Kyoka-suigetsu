@@ -1,0 +1,6 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "kyoka:item/kyoka_suigetsu_sealed"
+  }
+}
