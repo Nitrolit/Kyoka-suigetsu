@@ -20,4 +20,7 @@ public class ModItems {
 
     public static final RegistryObject<Item> KYOKA_HOGYOKU_SUBORDINATION = ITEMS.register("kyoka_hogyoku_subordination",
             () -> new HogyokuSubordinationArmor(new Item.Properties().tab(ItemGroup.TAB_COMBAT).stacksTo(1)));
+
+    public static final RegistryObject<Item> KYOKA_HOGYOKU_DAMAGED = ITEMS.register("kyoka_hogyoku_damaged",
+            () -> new Item(new Item.Properties().tab(ItemGroup.TAB_MISC).stacksTo(1)));
 }
