@@ -1,8 +1,8 @@
 package com.kyoka.addon;
 
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Hand;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -25,6 +25,7 @@ public class TogglePacket {
             int count = held.getCount();
             if (held.getItem() == ModItems.KYOKA_SEALED.get()) {
                 player.setItemInHand(Hand.MAIN_HAND, new ItemStack(ModItems.KYOKA_RELEASED.get(), count));
+                SubordinationHelper.onActivate(player);
             } else if (held.getItem() == ModItems.KYOKA_RELEASED.get()) {
                 player.setItemInHand(Hand.MAIN_HAND, new ItemStack(ModItems.KYOKA_SEALED.get(), count));
             }
