@@ -21,7 +21,6 @@ public class KyokaMod {
         modBus.addListener(ClientSetup::onClientSetup);
         modBus.addListener(this::commonSetup);
         MinecraftForge.EVENT_BUS.register(new KyokaEvents());
-        MinecraftForge.EVENT_BUS.register(new HogyokuEvents());
     }
 
     private void commonSetup(final net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent event) {
