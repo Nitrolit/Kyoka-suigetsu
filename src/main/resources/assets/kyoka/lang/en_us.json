@@ -1,6 +1,8 @@
 {
   "item.kyoka.kyoka_suigetsu_sealed": "Kyoka Suigetsu sealed",
   "item.kyoka.kyoka_suigetsu": "Kyoka Suigetsu",
+  "item.kyoka.kyoka_hogyoku": "Hogyoku",
   "key.kyoka.toggle": "Toggle Kyoka Suigetsu",
+  "key.kyoka.swap": "Swap with attacker",
   "key.categories.kyoka": "Kyoka Suigetsu"
 }
