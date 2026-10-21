@@ -6,14 +6,14 @@ import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.UUID;
 
 public final class HogyokuHelper {
     public static final double USE_COST = 1200.0;
-    public static final double REGEN_COST = 100.0;
-    public static final int REGEN_COOLDOWN = 500;
     public static final int HITS_PER_STEP = 10;
     public static final double GROWTH_STEP = 0.01;
     public static final double GROWTH_CAP = 0.20;
@@ -21,6 +21,7 @@ public final class HogyokuHelper {
     public static final int FALLS_NEEDED = 10;
     public static final int BLOCKS_NEEDED = 10;
     public static final int MAX_STAGE = 4;
+    public static final double SKILL_BONUS = 0.30;
 
     private static final String STAGE_KEY = "kyoka_hogyoku_stage";
     private static final String COOLDOWN_KEY = "kyoka_hogyoku_cd";
@@ -35,12 +36,20 @@ public final class HogyokuHelper {
         return player.getPersistentData().getInt(STAGE_KEY);
     }
 
-    // Setting a stage resets the stage counters (falls and blocks).
+    // Setting a stage resets the stage counters. Stage 2 gives the Subordination armor.
     public static void setStage(PlayerEntity player, int stage) {
         player.getPersistentData().putInt(STAGE_KEY, stage);
         player.getPersistentData().putInt(FALLS_KEY, 0);
         player.getPersistentData().putInt(BLOCKS_KEY, 0);
+        if (stage == 2) giveArmor(player);
         sync(player);
+    }
+
+    private static void giveArmor(PlayerEntity player) {
+        ItemStack armor = new ItemStack(ModItems.KYOKA_HOGYOKU_SUBORDINATION.get());
+        if (!player.inventory.add(armor)) {
+            player.drop(armor, false);
+        }
     }
 
     public static int hits(PlayerEntity player) {
@@ -69,7 +78,7 @@ public final class HogyokuHelper {
     }
 
     // Stage 2: 10 fall damage events move to stage 3.
-    // Stage 3: 10 fall damage events and 10 blocks move to stage 4.
+    // Stage 3: 10 fall damage events and 10 blocked hits move to stage 4.
     public static void addFall(PlayerEntity player) {
         int s = stage(player);
         if (s < 2 || s >= MAX_STAGE) return;
@@ -84,7 +93,7 @@ public final class HogyokuHelper {
         }
     }
 
-    // Blocks count only in stage 3 (for the move to stage 4).
+    // Blocked hits count only in stage 3.
     public static void addBlock(PlayerEntity player) {
         if (stage(player) != 3) return;
         int b = blocks(player) + 1;
@@ -110,6 +119,13 @@ public final class HogyokuHelper {
         return stage(player) >= 1 ? growth(player) : 0.0;
     }
 
+    // +30% skill damage while the Subordination armor is worn (stage 2 and up).
+    public static double armorSkillBonus(PlayerEntity player) {
+        if (stage(player) < 2) return 0.0;
+        ItemStack chest = player.getItemBySlot(EquipmentSlotType.CHEST);
+        return chest.getItem() == ModItems.KYOKA_HOGYOKU_SUBORDINATION.get() ? SKILL_BONUS : 0.0;
+    }
+
     public static void sync(PlayerEntity player) {
         if (player instanceof ServerPlayerEntity) {
             KyokaMod.NETWORK.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
@@ -128,18 +144,33 @@ public final class HogyokuHelper {
         }
     }
 
-    // Stage 1: heal to 65% when HP is at 40% or below, cost 100 reiatsu, cooldown 500 ticks.
+    // Regeneration by stage.
+    private static double regenThreshold(int stage) { return stage >= 2 ? 0.60 : 0.40; }
+    private static double regenHeal(int stage) { return stage >= 2 ? 0.80 : 0.65; }
+    private static double regenCost(int stage) { return stage >= 2 ? 200.0 : 100.0; }
+
+    private static int regenCooldown(int stage) {
+        switch (stage) {
+            case 1: return 500;
+            case 2: return 340;
+            case 3: return 200;
+            default: return 100;
+        }
+    }
+
     public static void tryRegen(PlayerEntity player) {
-        if (stage(player) < 1) return;
+        int s = stage(player);
+        if (s < 1) return;
         long now = player.level.getGameTime();
         if (player.getPersistentData().getLong(COOLDOWN_KEY) > now) return;
-        if (player.getHealth() > player.getMaxHealth() * 0.40f) return;
+        if (player.getHealth() > player.getMaxHealth() * regenThreshold(s)) return;
 
         BleachawakenModVariables.PlayerVariables v = ReiatsuHelper.vars(player);
-        if (v == null || v.reiatsu_Bar < REGEN_COST) return;
+        double cost = regenCost(s);
+        if (v == null || v.reiatsu_Bar < cost) return;
 
-        ReiatsuHelper.spend(player, REGEN_COST);
-        player.setHealth(player.getMaxHealth() * 0.65f);
-        player.getPersistentData().putLong(COOLDOWN_KEY, now + REGEN_COOLDOWN);
+        ReiatsuHelper.spend(player, cost);
+        player.setHealth((float) (player.getMaxHealth() * regenHeal(s)));
+        player.getPersistentData().putLong(COOLDOWN_KEY, now + regenCooldown(s));
     }
 }
