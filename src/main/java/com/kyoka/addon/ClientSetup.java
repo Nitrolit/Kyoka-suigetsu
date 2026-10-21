@@ -1,6 +1,5 @@
 package com.kyoka.addon;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.client.util.InputMappings;
 import net.minecraftforge.api.distmarker.Dist;
