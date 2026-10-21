@@ -9,18 +9,35 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 public class KyokaEvents {
     private static final double RANGE = 4.0;
     private static final float ABILITY_CHANCE = 0.10f;
     private static final int ABILITY_INTERVAL = 20;
+    private static final int MAX_BLOCKS = 10;
+    private static final int BREAK_TICKS = 200;
     private static final Random RANDOM = new Random();
+    private static final Map<UUID, State> STATES = new HashMap<>();
     private static boolean reflecting = false;
+
+    public static class State {
+        public LivingEntity lastAttacker;
+        public int hits;
+        public long brokenUntil;
+    }
+
+    public static State state(PlayerEntity player) {
+        return STATES.computeIfAbsent(player.getUUID(), k -> new State());
+    }
 
     public static boolean isReleasedHeld(LivingEntity entity) {
         return entity instanceof PlayerEntity
@@ -32,7 +49,6 @@ public class KyokaEvents {
         return isReleasedHeld(entity) && ReiatsuHelper.hasEnoughReiatsu((PlayerEntity) entity);
     }
 
-    // Passive drain: 10 reiatsu every 100 ticks while the passive is active.
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || event.player.level.isClientSide) return;
@@ -45,19 +61,53 @@ public class KyokaEvents {
 
     @SubscribeEvent
     public void onAttack(LivingAttackEvent event) {
-        LivingEntity victim = event.getEntityLiving();
-        if (!isPassiveActive(victim) || reflecting) return;
+        if (reflecting || !(event.getEntityLiving() instanceof PlayerEntity)) return;
+        PlayerEntity victim = (PlayerEntity) event.getEntityLiving();
+        if (!isReleasedHeld(victim)) return;
 
-        event.setCanceled(true);
-
+        State st = state(victim);
         Entity attacker = event.getSource().getEntity();
-        if (attacker instanceof LivingEntity && attacker != victim) {
-            reflecting = true;
-            try {
-                ((LivingEntity) attacker).hurt(DamageSource.thorns(victim), event.getAmount() / 2.0f);
-            } finally {
-                reflecting = false;
+        boolean hasAttacker = attacker instanceof LivingEntity && attacker != victim;
+        if (hasAttacker) st.lastAttacker = (LivingEntity) attacker;
+
+        if (!ReiatsuHelper.hasEnoughReiatsu(victim)) return;
+
+        long now = victim.level.getGameTime();
+        if (now < st.brokenUntil) return;
+
+        st.hits++;
+        if (st.hits <= MAX_BLOCKS) {
+            event.setCanceled(true);
+            // Reflection applies only to subordinates.
+            if (hasAttacker && SubordinationHelper.isSubordinate(victim, (LivingEntity) attacker)) {
+                reflecting = true;
+                try {
+                    ((LivingEntity) attacker).hurt(DamageSource.thorns(victim), event.getAmount() / 2.0f);
+                } finally {
+                    reflecting = false;
+                }
             }
+            return;
+        }
+
+        // 11th hit: protection breaks, owner takes 3x damage, protection is off for 200 ticks.
+        st.hits = 0;
+        st.brokenUntil = now + BREAK_TICKS;
+        event.setCanceled(true);
+        reflecting = true;
+        try {
+            victim.hurt(event.getSource(), event.getAmount() * 3.0f);
+        } finally {
+            reflecting = false;
+        }
+    }
+
+    // Dead entities are removed from every owner's list.
+    @SubscribeEvent
+    public void onDeath(LivingDeathEvent event) {
+        LivingEntity dead = event.getEntityLiving();
+        if (dead.level instanceof ServerWorld) {
+            SubordinationHelper.data((ServerWorld) dead.level).removeEverywhere(dead.getUUID());
         }
     }
 
@@ -72,7 +122,7 @@ public class KyokaEvents {
 
             List<MobEntity> mobs = world.getEntitiesOfClass(MobEntity.class,
                     owner.getBoundingBox().inflate(RANGE),
-                    m -> m.isAlive() && m.getTarget() == owner);
+                    m -> m.isAlive() && m.getTarget() == owner && SubordinationHelper.isSubordinate(owner, m));
 
             for (MobEntity mob : mobs) {
                 if (RANDOM.nextFloat() >= ABILITY_CHANCE) continue;
