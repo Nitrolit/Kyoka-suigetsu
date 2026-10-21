@@ -78,6 +78,7 @@ public class KyokaEvents {
         st.hits++;
         if (st.hits <= MAX_BLOCKS) {
             event.setCanceled(true);
+                        HogyokuHelper.addBlock(victim);
             // Reflection applies only to subordinates.
             if (hasAttacker && SubordinationHelper.isSubordinate(victim, (LivingEntity) attacker)) {
                 reflecting = true;
