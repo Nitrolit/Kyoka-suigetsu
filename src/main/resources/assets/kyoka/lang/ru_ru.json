@@ -1,6 +1,8 @@
 {
   "item.kyoka.kyoka_suigetsu_sealed": "Кёка Суйгэцу (запечатанный)",
   "item.kyoka.kyoka_suigetsu": "Кёка Суйгэцу",
+  "item.kyoka.kyoka_hogyoku": "Хогёку",
   "key.kyoka.toggle": "Активировать Кёка Суйгэцу",
+  "key.kyoka.swap": "Обмен местами с атакующим",
   "key.categories.kyoka": "Кёка Суйгэцу"
 }
