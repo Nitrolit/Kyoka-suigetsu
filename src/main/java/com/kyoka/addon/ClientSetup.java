@@ -15,11 +15,14 @@ public class ClientSetup {
     public static final KeyBinding TOGGLE_KEY = new KeyBinding(
             "key.kyoka.toggle", InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_J, "key.categories.kyoka");
     public static final KeyBinding SWAP_KEY = new KeyBinding(
-            "key.kyoka.swap", InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_M, "key.categories.kyoka");
+            "key.kyoka.swap", InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.kyoka");
+    public static final KeyBinding BLINK_KEY = new KeyBinding(
+            "key.kyoka.blink", InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_G, "key.categories.kyoka");
 
     public static void onClientSetup(FMLClientSetupEvent event) {
         ClientRegistry.registerKeyBinding(TOGGLE_KEY);
         ClientRegistry.registerKeyBinding(SWAP_KEY);
+        ClientRegistry.registerKeyBinding(BLINK_KEY);
     }
 
     @Mod.EventBusSubscriber(modid = KyokaMod.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -31,6 +34,9 @@ public class ClientSetup {
             }
             while (SWAP_KEY.consumeClick()) {
                 KyokaMod.NETWORK.sendToServer(new SwapPacket());
+            }
+            while (BLINK_KEY.consumeClick()) {
+                KyokaMod.NETWORK.sendToServer(new BlinkPacket());
             }
         }
     }
