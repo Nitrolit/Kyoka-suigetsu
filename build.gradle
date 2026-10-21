@@ -8,6 +8,12 @@ buildscript {
     }
 }
 
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
@@ -38,7 +44,7 @@ minecraft {
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.16.5-36.2.39'
-    compileOnly fg.deobf(files('libs/bleachawaken.jar'))
+    compileOnly fg.deobf('bleachawaken:bleachawaken:1.6.1')
 }
 
 jar {
