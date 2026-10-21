@@ -60,7 +60,8 @@ public class KyokaSwordItem extends Item {
 
             if (forward > 0 && forward <= length + e.getBbWidth() / 2
                     && Math.abs(sideways) <= halfWidth && inHeight) {
-                e.hurt(DamageSource.playerAttack(player), damage);
+                                e.hurt(DamageSource.playerAttack(player),
+                        damage * (float) (1.0 + HogyokuHelper.armorSkillBonus(player)));
             }
         }
 
