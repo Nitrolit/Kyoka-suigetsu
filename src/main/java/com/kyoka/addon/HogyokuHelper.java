@@ -1,9 +1,9 @@
 package com.kyoka.addon;
 
 import bleachawaken.deephantom.com.BleachawakenModVariables;
-import net.minecraft.entity.ai.attributes.AttributeInstance;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.entity.player.PlayerEntity;
 
 import java.util.UUID;
@@ -51,7 +51,7 @@ public final class HogyokuHelper {
     }
 
     public static void applySpeed(PlayerEntity player) {
-        AttributeInstance speed = player.getAttribute(Attributes.MOVEMENT_SPEED);
+        ModifiableAttributeInstance speed = player.getAttribute(Attributes.MOVEMENT_SPEED);
         if (speed == null) return;
         speed.removeModifier(SPEED_ID);
         double g = activeGrowth(player);
