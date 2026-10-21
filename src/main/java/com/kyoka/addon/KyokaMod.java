@@ -23,10 +23,14 @@ public class KyokaMod {
         MinecraftForge.EVENT_BUS.register(new KyokaEvents());
         MinecraftForge.EVENT_BUS.register(new HogyokuEvents());
         MinecraftForge.EVENT_BUS.register(new CraterEvents());
+        MinecraftForge.EVENT_BUS.register(new HogyokuArmorEvents());
     }
 
     private void commonSetup(final net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent event) {
         NETWORK.registerMessage(0, TogglePacket.class, TogglePacket::encode, TogglePacket::decode, TogglePacket::handle);
         NETWORK.registerMessage(1, SwapPacket.class, SwapPacket::encode, SwapPacket::decode, SwapPacket::handle);
+        NETWORK.registerMessage(2, HogyokuSyncPacket.class, HogyokuSyncPacket::encode,
+                HogyokuSyncPacket::decode, HogyokuSyncPacket::handle);
+        NETWORK.registerMessage(3, BlinkPacket.class, BlinkPacket::encode, BlinkPacket::decode, BlinkPacket::handle);
     }
 }
