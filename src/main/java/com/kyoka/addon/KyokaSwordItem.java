@@ -1,26 +1,55 @@
 package com.kyoka.addon;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.IItemTier;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.SwordItem;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.List;
 
-public class KyokaSwordItem extends Item {
+public class KyokaSwordItem extends SwordItem {
+    private static final IItemTier TIER = new IItemTier() {
+        @Override
+        public int getUses() { return 2000; }
+
+        @Override
+        public float getSpeed() { return 8.0f; }
+
+        @Override
+        public float getAttackDamageBonus() { return 0.0f; }
+
+        @Override
+        public int getLevel() { return 4; }
+
+        @Override
+        public int getEnchantmentValue() { return 15; }
+
+        @Override
+        public Ingredient getRepairIngredient() { return Ingredient.EMPTY; }
+    };
+
+    // Right-click damage is 50% of the original values: sealed 15, released 60.
+    private static final float SEALED_RMB_DAMAGE = 15.0f;
+    private static final float RELEASED_RMB_DAMAGE = 60.0f;
+
     private final boolean released;
 
     public KyokaSwordItem(Properties properties, boolean released) {
-        super(properties);
+        super(TIER, 9, -2.4f, properties);
         this.released = released;
     }
 
@@ -29,7 +58,9 @@ public class KyokaSwordItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
         if (world.isClientSide) return ActionResult.success(stack);
 
-        float damage = released ? 120.0f : 30.0f;
+        float damage = released ? RELEASED_RMB_DAMAGE : SEALED_RMB_DAMAGE;
+        if (KyokaSkills.isCrystal(player)) damage *= 0.5f;
+
         double width = released ? 7.0 : 3.0;
         double length = released ? 5.0 : 2.0;
         slash((ServerWorld) world, player, damage, width, length);
@@ -60,12 +91,23 @@ public class KyokaSwordItem extends Item {
 
             if (forward > 0 && forward <= length + e.getBbWidth() / 2
                     && Math.abs(sideways) <= halfWidth && inHeight) {
-                                e.hurt(DamageSource.playerAttack(player),
-                        damage * (float) (1.0 + HogyokuHelper.armorSkillBonus(player)));
+                e.hurt(DamageSource.playerAttack(player), damage);
             }
         }
 
-        // Visual: vanilla sword sweep particles across the slash line.
+        int blockY = (int) Math.floor(eyeY);
+        for (double f = 0.5; f < length; f += 1.0) {
+            for (double s = -width / 2 + 0.5; s < width / 2; s += 1.0) {
+                BlockPos pos = new BlockPos(
+                        (int) Math.floor(origin.x + fwd.x * f + side.x * s),
+                        blockY,
+                        (int) Math.floor(origin.z + fwd.z * f + side.z * s));
+                BlockState state = world.getBlockState(pos);
+                if (state.isAir() || state.getDestroySpeed(world, pos) < 0) continue;
+                world.destroyBlock(pos, true);
+            }
+        }
+
         double cx = origin.x + fwd.x * (length / 2);
         double cz = origin.z + fwd.z * (length / 2);
         for (double t = -width / 2; t <= width / 2; t += 1.0) {
