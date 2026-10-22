@@ -18,11 +18,17 @@ public class ClientSetup {
             "key.kyoka.swap", InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.kyoka");
     public static final KeyBinding BLINK_KEY = new KeyBinding(
             "key.kyoka.blink", InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_G, "key.categories.kyoka");
+    public static final KeyBinding CRYSTAL_KEY = new KeyBinding(
+            "key.kyoka.crystal", InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_X, "key.categories.kyoka");
+    public static final KeyBinding ZONE_KEY = new KeyBinding(
+            "key.kyoka.zone", InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_V, "key.categories.kyoka");
 
     public static void onClientSetup(FMLClientSetupEvent event) {
         ClientRegistry.registerKeyBinding(TOGGLE_KEY);
         ClientRegistry.registerKeyBinding(SWAP_KEY);
         ClientRegistry.registerKeyBinding(BLINK_KEY);
+        ClientRegistry.registerKeyBinding(CRYSTAL_KEY);
+        ClientRegistry.registerKeyBinding(ZONE_KEY);
     }
 
     @Mod.EventBusSubscriber(modid = KyokaMod.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -37,6 +43,12 @@ public class ClientSetup {
             }
             while (BLINK_KEY.consumeClick()) {
                 KyokaMod.NETWORK.sendToServer(new BlinkPacket());
+            }
+            while (CRYSTAL_KEY.consumeClick()) {
+                KyokaMod.NETWORK.sendToServer(new CrystalPacket());
+            }
+            while (ZONE_KEY.consumeClick()) {
+                KyokaMod.NETWORK.sendToServer(new ZonePacket());
             }
         }
     }
