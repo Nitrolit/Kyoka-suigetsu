@@ -6,6 +6,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.DamageSource;
@@ -20,23 +21,24 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
 public class KyokaSkills {
     public static final double CRYSTAL_RADIUS = 25.0;
-    public static final int CRYSTAL_TICKS = 400;      // 20 seconds
-    public static final int CRYSTAL_COOLDOWN = 400;   // 20 seconds
-    public static final float CRYSTAL_DMG_MULT = 0.5f;
+    public static final int CRYSTAL_TICKS = 400;
+    public static final int CRYSTAL_COOLDOWN = 400;
     public static final double ZONE_RADIUS = 6.0;
-    public static final double ZONE_COST = 15.0;
-    public static final float ZONE_DAMAGE = 2.0f;
+    public static final double ZONE_COST = 5.0;        // reiatsu per ZONE_PERIOD ticks
+    public static final float ZONE_DAMAGE = 0.5f;      // damage per ZONE_PERIOD ticks
+    public static final int ZONE_PERIOD = 3;           // ticks
 
     private static final String CRYSTAL_CD = "kyoka_crystal_cd";
     private static final String CRYSTAL_UNTIL = "kyoka_crystal_until";
     private static final String ZONE_ON = "kyoka_zone_on";
-    // owner UUID -> UUIDs of mobs frozen by that owner's crystallization
     private static final Map<UUID, Set<UUID>> FROZEN = new HashMap<>();
+    private static final Random RANDOM = new Random();
 
     public static boolean isCrystal(PlayerEntity p) {
         return p.level.getGameTime() < p.getPersistentData().getLong(CRYSTAL_UNTIL);
@@ -58,8 +60,7 @@ public class KyokaSkills {
 
     public static void toggleZone(PlayerEntity player) {
         if (player.level.isClientSide || !holdingKyoka(player)) return;
-        boolean on = player.getPersistentData().getBoolean(ZONE_ON);
-        if (on) {
+        if (player.getPersistentData().getBoolean(ZONE_ON)) {
             player.getPersistentData().putBoolean(ZONE_ON, false);
             player.sendMessage(new StringTextComponent("Зона выключена"), player.getUUID());
             return;
@@ -97,22 +98,31 @@ public class KyokaSkills {
             }
         }
 
-        // Zone: once per second, slow and weaken enemies and deal 2 damage, costs 15 reiatsu per second.
-        if (player.tickCount % 20 == 0 && player.getPersistentData().getBoolean(ZONE_ON)) {
+        // Zone: every 3 ticks costs 5 reiatsu, deals 0.5 damage and slows/weakens enemies.
+        if (player.tickCount % ZONE_PERIOD == 0 && player.getPersistentData().getBoolean(ZONE_ON)) {
             BleachawakenModVariables.PlayerVariables v = ReiatsuHelper.vars(player);
             if (!holdingKyoka(player) || v == null || v.reiatsu_Bar < ZONE_COST) {
                 player.getPersistentData().putBoolean(ZONE_ON, false);
                 player.sendMessage(new StringTextComponent("Зона выключена"), player.getUUID());
-            } else {
-                ReiatsuHelper.spend(player, ZONE_COST);
-                AxisAlignedBB box = player.getBoundingBox().inflate(ZONE_RADIUS);
-                for (LivingEntity e : world.getEntitiesOfClass(LivingEntity.class, box,
-                        x -> x != player && x.isAlive())) {
-                    e.addEffect(new EffectInstance(Effects.MOVEMENT_SLOWDOWN, 60, 1));
-                    e.addEffect(new EffectInstance(Effects.WEAKNESS, 60, 0));
-                    e.hurt(DamageSource.playerAttack(player), ZONE_DAMAGE);
-                }
+                return;
+            }
+            ReiatsuHelper.spend(player, ZONE_COST);
+
+            AxisAlignedBB box = player.getBoundingBox().inflate(ZONE_RADIUS);
+            for (LivingEntity e : world.getEntitiesOfClass(LivingEntity.class, box,
+                    x -> x != player && x.isAlive())) {
+                e.addEffect(new EffectInstance(Effects.MOVEMENT_SLOWDOWN, 40, 1));
+                e.addEffect(new EffectInstance(Effects.WEAKNESS, 40, 0));
+                e.hurt(DamageSource.playerAttack(player), ZONE_DAMAGE);
+            }
+
+            // Grey "rain": smoke particles falling inside the zone.
+            for (int i = 0; i < 12; i++) {
+                double x = player.getX() + (RANDOM.nextDouble() * 2 - 1) * ZONE_RADIUS;
+                double z = player.getZ() + (RANDOM.nextDouble() * 2 - 1) * ZONE_RADIUS;
+                double y = player.getY() + 2.0 + RANDOM.nextDouble() * 3.0;
+                world.sendParticles(ParticleTypes.SMOKE, x, y, z, 1, 0, -0.3, 0, 0.0);
             }
         }
     }
-  }
+}
