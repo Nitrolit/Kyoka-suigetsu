@@ -1,0 +1,81 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "crystal": {
+      "animation_length": 9.0,
+      "loop": false,
+      "bones": {
+        "sword": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "4.0": [
+              0,
+              0,
+              0
+            ],
+            "5.0": [
+              0,
+              -2.5,
+              3.5
+            ],
+            "7.0": [
+              0,
+              -2.5,
+              3.5
+            ],
+            "9.0": [
+              0,
+              0,
+              0
+            ]
+          },
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "4.0": [
+              0,
+              0,
+              0
+            ],
+            "5.0": [
+              -70,
+              0,
+              0
+            ],
+            "7.0": [
+              -70,
+              0,
+              0
+            ],
+            "9.0": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      },
+      "sound_effects": {
+        "0.0": {
+          "effect": "minecraft:entity.player.attack.sweep"
+        },
+        "1.0": {
+          "effect": "minecraft:entity.player.attack.sweep"
+        },
+        "2.0": {
+          "effect": "minecraft:entity.player.attack.sweep"
+        },
+        "3.0": {
+          "effect": "minecraft:entity.player.attack.sweep"
+        }
+      }
+    }
+  }
+}
