@@ -2,7 +2,12 @@
   "item.kyoka.kyoka_suigetsu_sealed": "Кёка Суйгэцу (запечатанный)",
   "item.kyoka.kyoka_suigetsu": "Кёка Суйгэцу",
   "item.kyoka.kyoka_hogyoku": "Хогёку",
+  "item.kyoka.kyoka_hogyoku_subordination": "Хогёку Subordination",
+  "item.kyoka.kyoka_hogyoku_damaged": "Повреждённый Хогёку",
   "key.kyoka.toggle": "Активировать Кёка Суйгэцу",
   "key.kyoka.swap": "Обмен местами с атакующим",
+  "key.kyoka.blink": "Блинк",
+  "key.kyoka.crystal": "Кристаллизация",
+  "key.kyoka.zone": "Зона",
   "key.categories.kyoka": "Кёка Суйгэцу"
 }
