@@ -26,6 +26,8 @@ public class KyokaMod {
         MinecraftForge.EVENT_BUS.register(new HogyokuArmorEvents());
         MinecraftForge.EVENT_BUS.register(new QuestRewardEvents());
         MinecraftForge.EVENT_BUS.register(new KyokaSkills());
+        MinecraftForge.EVENT_BUS.register(new ShunpoCooldownEvents());
+        MinecraftForge.EVENT_BUS.register(new KyokaCommands());
     }
 
     private void commonSetup(final net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent event) {
