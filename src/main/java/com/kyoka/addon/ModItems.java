@@ -18,6 +18,12 @@ public class ModItems {
     public static final RegistryObject<Item> KYOKA_HOGYOKU = ITEMS.register("kyoka_hogyoku",
             () -> new HogyokuItem(new Item.Properties().tab(ItemGroup.TAB_MISC).stacksTo(1)));
 
+    public static final RegistryObject<Item> KYOKA_HOGYOKU_SUBORDINATION = ITEMS.register("kyoka_hogyoku_subordination",
+            () -> new HogyokuSubordinationArmor(new Item.Properties().tab(ItemGroup.TAB_COMBAT).stacksTo(1)));
+
+    public static final RegistryObject<Item> KYOKA_HOGYOKU_DAMAGED = ITEMS.register("kyoka_hogyoku_damaged",
+            () -> new HogyokuDamagedItem(new Item.Properties().tab(ItemGroup.TAB_MISC).stacksTo(1)));
+
     public static final RegistryObject<Item> HOGYOKU_WING_BLACK = ITEMS.register("hogyoku_wing_black",
             () -> new HogyokuWingArmorBlack(new Item.Properties().tab(ItemGroup.TAB_COMBAT).stacksTo(1)));
 
