@@ -10,31 +10,14 @@ import net.minecraft.util.SoundEvents;
 
 public class HogyokuSubordinationArmor extends ArmorItem {
     private static final IArmorMaterial MATERIAL = new IArmorMaterial() {
-        @Override
-        public int getDurabilityForSlot(EquipmentSlotType slot) { return 500; }
-
-        @Override
-        public int getDefenseForSlot(EquipmentSlotType slot) {
-            return slot == EquipmentSlotType.CHEST ? 8 : 3;
-        }
-
-        @Override
-        public int getEnchantmentValue() { return 15; }
-
-        @Override
-        public SoundEvent getEquipSound() { return SoundEvents.ARMOR_EQUIP_IRON; }
-
-        @Override
-        public Ingredient getRepairIngredient() { return Ingredient.EMPTY; }
-
-        @Override
-        public String getName() { return "kyoka_subordination"; }
-
-        @Override
-        public float getToughness() { return 2.0f; }
-
-        @Override
-        public float getKnockbackResistance() { return 0.0f; }
+        @Override public int getDurabilityForSlot(EquipmentSlotType slot) { return 500; }
+        @Override public int getDefenseForSlot(EquipmentSlotType slot) { return slot == EquipmentSlotType.CHEST ? 8 : 3; }
+        @Override public int getEnchantmentValue() { return 15; }
+        @Override public SoundEvent getEquipSound() { return SoundEvents.ARMOR_EQUIP_IRON; }
+        @Override public Ingredient getRepairIngredient() { return Ingredient.EMPTY; }
+        @Override public String getName() { return "kyoka_subordination"; }
+        @Override public float getToughness() { return 2.0F; }
+        @Override public float getKnockbackResistance() { return 0.0F; }
     };
 
     public HogyokuSubordinationArmor(Item.Properties properties) {
