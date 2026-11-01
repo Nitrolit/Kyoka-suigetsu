@@ -42,7 +42,6 @@ public class KyokaSwordItem extends SwordItem {
         public Ingredient getRepairIngredient() { return Ingredient.EMPTY; }
     };
 
-    // Right-click damage is 50% of the original values: sealed 15, released 60.
     private static final float SEALED_RMB_DAMAGE = 15.0f;
     private static final float RELEASED_RMB_DAMAGE = 60.0f;
 
@@ -69,50 +68,62 @@ public class KyokaSwordItem extends SwordItem {
 
     private static void slash(ServerWorld world, PlayerEntity player, float damage, double width, double length) {
         Vector3d look = player.getLookAngle();
-        Vector3d fwd = new Vector3d(look.x, 0, look.z);
-        if (fwd.lengthSqr() < 1.0E-6) return;
-        fwd = fwd.normalize();
-        Vector3d side = new Vector3d(-fwd.z, 0, fwd.x);
+        if (look.lengthSqr() < 1.0E-6) return;
+        look = look.normalize();
+
+        Vector3d forward = look;
+        Vector3d side = new Vector3d(-forward.z, 0.0D, forward.x).normalize();
+        Vector3d up = new Vector3d(0.0D, 1.0D, 0.0D);
 
         double eyeY = player.getEyeY();
         Vector3d origin = player.position();
 
         List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class,
-                player.getBoundingBox().inflate(length + width + 2),
+                player.getBoundingBox().inflate(length + width + 2.0D, length + width + 2.0D, length + width + 2.0D),
                 e -> e != player && e.isAlive());
 
         for (LivingEntity e : targets) {
-            Vector3d d = e.position().subtract(origin);
-            double forward = d.x * fwd.x + d.z * fwd.z;
-            double sideways = d.x * side.x + d.z * side.z;
-            double halfWidth = width / 2 + e.getBbWidth() / 2;
-            double centerY = e.getY() + e.getBbHeight() / 2;
-            boolean inHeight = Math.abs(centerY - eyeY) <= 0.5 + e.getBbHeight() / 2;
+            Vector3d rel = e.position().subtract(origin);
+            double forwardDist = rel.dot(forward);
+            double sideDist = rel.dot(side);
+            double verticalDist = rel.dot(up);
 
-            if (forward > 0 && forward <= length + e.getBbWidth() / 2
-                    && Math.abs(sideways) <= halfWidth && inHeight) {
+            double halfWidth = width / 2.0D + e.getBbWidth() / 2.0D;
+            double halfHeight = 1.6D + e.getBbHeight() / 2.0D;
+
+            if (forwardDist > 0.0D
+                    && forwardDist <= length + e.getBbWidth() / 2.0D
+                    && Math.abs(sideDist) <= halfWidth
+                    && Math.abs(verticalDist) <= halfHeight) {
                 e.hurt(DamageSource.playerAttack(player), damage);
+                e.setDeltaMovement(0.0D, 0.0D, 0.0D);
             }
         }
 
         int blockY = (int) Math.floor(eyeY);
-        for (double f = 0.5; f < length; f += 1.0) {
-            for (double s = -width / 2 + 0.5; s < width / 2; s += 1.0) {
-                BlockPos pos = new BlockPos(
-                        (int) Math.floor(origin.x + fwd.x * f + side.x * s),
-                        blockY,
-                        (int) Math.floor(origin.z + fwd.z * f + side.z * s));
-                BlockState state = world.getBlockState(pos);
-                if (state.isAir() || state.getDestroySpeed(world, pos) < 0) continue;
-                world.destroyBlock(pos, true);
+        for (double f = 0.5D; f < length; f += 1.0D) {
+            for (double s = -width / 2.0D + 0.5D; s < width / 2.0D; s += 1.0D) {
+                for (double v = -1.0D; v <= 1.5D; v += 1.0D) {
+                    BlockPos pos = new BlockPos(
+                            (int) Math.floor(origin.x + forward.x * f + side.x * s),
+                            (int) Math.floor(blockY + v),
+                            (int) Math.floor(origin.z + forward.z * f + side.z * s));
+                    BlockState state = world.getBlockState(pos);
+                    if (state.isAir() || state.getDestroySpeed(world, pos) < 0) continue;
+                    world.destroyBlock(pos, true);
+                }
             }
         }
 
-        double cx = origin.x + fwd.x * (length / 2);
-        double cz = origin.z + fwd.z * (length / 2);
-        for (double t = -width / 2; t <= width / 2; t += 1.0) {
+        double cx = origin.x + forward.x * (length / 2.0D);
+        double cy = eyeY - 0.5D;
+        double cz = origin.z + forward.z * (length / 2.0D);
+        for (double t = -width / 2.0D; t <= width / 2.0D; t += 1.0D) {
             world.sendParticles(ParticleTypes.SWEEP_ATTACK,
-                    cx + side.x * t, eyeY - 0.5, cz + side.z * t, 1, 0, 0, 0, 0);
+                    cx + side.x * t,
+                    cy + (float) Math.sin(t) * 0.15D,
+                    cz + side.z * t,
+                    1, 0, 0, 0, 0);
         }
         world.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 1.0f, 1.0f);
