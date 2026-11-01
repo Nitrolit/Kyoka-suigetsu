@@ -35,6 +35,10 @@ public class KyokaSwordVisual {
         this.owner = owner;
     }
 
+    public static boolean isActive(PlayerEntity player) {
+        return player != null && ACTIVE.containsKey(player.getUUID());
+    }
+
     public static void start(PlayerEntity player) {
         if (player == null) return;
         ACTIVE.put(player.getUUID(), new KyokaSwordVisual(player));
@@ -147,7 +151,7 @@ public class KyokaSwordVisual {
     }
 
     private void spawnTrailParticles() {
-        if (!(owner.level.isClientSide)) return;
+        if (owner == null || !owner.level.isClientSide) return;
 
         double px = owner.getX() + owner.getLookAngle().x * 0.5D;
         double py = owner.getY() + 1.0D;
@@ -187,16 +191,14 @@ public class KyokaSwordVisual {
                     Math.sin(angle) * strength * 0.05D);
         }
     }
-}
 
-class KyokaSwordVisualEvents {
-    @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) return;
-
-        KyokaSwordVisual.tick(mc.player);
+    public static class Events {
+        @SubscribeEvent
+        public void onClientTick(TickEvent.ClientTickEvent event) {
+            if (event.phase != TickEvent.Phase.END) return;
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player == null) return;
+            KyokaSwordVisual.tick(mc.player);
+        }
     }
 }
