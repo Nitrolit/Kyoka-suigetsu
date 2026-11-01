@@ -30,9 +30,9 @@ public class KyokaSkills {
     public static final int CRYSTAL_TICKS = 400;
     public static final int CRYSTAL_COOLDOWN = 400;
     public static final double ZONE_RADIUS = 6.0;
-    public static final double ZONE_COST = 5.0;        // reiatsu per ZONE_PERIOD ticks
-    public static final float ZONE_DAMAGE = 0.5f;      // damage per ZONE_PERIOD ticks
-    public static final int ZONE_PERIOD = 3;           // ticks
+    public static final double ZONE_COST = 5.0;
+    public static final float ZONE_DAMAGE = 0.5f;
+    public static final int ZONE_PERIOD = 3;
 
     private static final String CRYSTAL_CD = "kyoka_crystal_cd";
     private static final String CRYSTAL_UNTIL = "kyoka_crystal_until";
@@ -71,13 +71,17 @@ public class KyokaSkills {
         player.sendMessage(new StringTextComponent("Зона включена"), player.getUUID());
     }
 
+    private static void dealZoneDamage(PlayerEntity player, LivingEntity target, float damage) {
+        target.hurt(DamageSource.playerAttack(player), damage);
+        target.setDeltaMovement(0.0D, 0.0D, 0.0D);
+    }
+
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || event.player.level.isClientSide) return;
         PlayerEntity player = event.player;
         ServerWorld world = (ServerWorld) player.level;
 
-        // Crystallization: freeze mobs in range while active, release them when it ends.
         Set<UUID> frozen = FROZEN.get(player.getUUID());
         if (frozen != null) {
             if (isCrystal(player)) {
@@ -98,7 +102,6 @@ public class KyokaSkills {
             }
         }
 
-        // Zone: every 3 ticks costs 5 reiatsu, deals 0.5 damage and slows/weakens enemies.
         if (player.tickCount % ZONE_PERIOD == 0 && player.getPersistentData().getBoolean(ZONE_ON)) {
             BleachawakenModVariables.PlayerVariables v = ReiatsuHelper.vars(player);
             if (!holdingKyoka(player) || v == null || v.reiatsu_Bar < ZONE_COST) {
@@ -113,10 +116,9 @@ public class KyokaSkills {
                     x -> x != player && x.isAlive())) {
                 e.addEffect(new EffectInstance(Effects.MOVEMENT_SLOWDOWN, 40, 1));
                 e.addEffect(new EffectInstance(Effects.WEAKNESS, 40, 0));
-                e.hurt(DamageSource.playerAttack(player), ZONE_DAMAGE);
+                dealZoneDamage(player, e, ZONE_DAMAGE);
             }
 
-            // Grey "rain": smoke particles falling inside the zone.
             for (int i = 0; i < 12; i++) {
                 double x = player.getX() + (RANDOM.nextDouble() * 2 - 1) * ZONE_RADIUS;
                 double z = player.getZ() + (RANDOM.nextDouble() * 2 - 1) * ZONE_RADIUS;
