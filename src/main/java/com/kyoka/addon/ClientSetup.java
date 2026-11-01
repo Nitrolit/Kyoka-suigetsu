@@ -1,9 +1,11 @@
 package com.kyoka.addon;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.client.util.InputMappings;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -29,6 +31,8 @@ public class ClientSetup {
         ClientRegistry.registerKeyBinding(BLINK_KEY);
         ClientRegistry.registerKeyBinding(CRYSTAL_KEY);
         ClientRegistry.registerKeyBinding(ZONE_KEY);
+
+        MinecraftForge.EVENT_BUS.register(new KyokaSwordVisual.Events());
     }
 
     @Mod.EventBusSubscriber(modid = KyokaMod.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -46,6 +50,9 @@ public class ClientSetup {
             }
             while (CRYSTAL_KEY.consumeClick()) {
                 KyokaMod.NETWORK.sendToServer(new CrystalPacket());
+                if (Minecraft.getInstance().player != null) {
+                    KyokaSwordVisual.start(Minecraft.getInstance().player);
+                }
             }
             while (ZONE_KEY.consumeClick()) {
                 KyokaMod.NETWORK.sendToServer(new ZonePacket());
