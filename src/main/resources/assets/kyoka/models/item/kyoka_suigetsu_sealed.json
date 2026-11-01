@@ -1,8 +1,6 @@
 {
-  "parent": "bleachawaken:custom/asauchi",
+  "parent": "item/handheld",
   "textures": {
-    "0": "bleachawaken:blocks/asauchi_base_texture",
-    "1": "bleachawaken:blocks/zanpakuto_blade",
-    "particle": "bleachawaken:items/asauchi"
+    "layer0": "kyoka:item/kyoka_suigetsu_sealed"
   }
 }
